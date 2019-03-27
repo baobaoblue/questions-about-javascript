@@ -55,9 +55,20 @@ console.log('扁平化后：',flatten(arr));
 
 sass只是中间形态，最终执行的是css
 
-5.vue2.0跟vue3.0分别是如何实现双向绑定的
+### 5.vue2.0跟vue3.0分别是如何实现双向绑定的
 
-vue2.0 
+vue2.0 是采用数据劫持结合发布者-订阅者模式的方式，通过Object.defineProperty()来劫持各个属性的setter，getter，在数据变动时发布消息给订阅者，触发相应的监听回调。
+
+具体步骤：
+
+第一步：需要observe的数据对象进行递归遍历，包括子属性对象的属性，都加上 setter和getter这样的话，给这个对象的某个值赋值，就会触发setter，那么就能监听到了数据变化
+
+第二步：compile解析模板指令，将模板中的变量替换成数据，然后初始化渲染页面视图，并将每个指令对应的节点绑定更新函数，添加监听数据的订阅者，一旦数据有变动，收到通知，更新视图
+
+第三步：Watcher订阅者是Observer和Compile之间通信的桥梁，主要做的事情是:1、在自身实例化时往属性订阅器(dep)里面添加自己2、自身必须有一个update()方法3、待属性变动dep.notice()通知时，能调用自身的update()方法，并触发Compile中绑定的回调，则功成身退。
+
+第四步：MVVM作为数据绑定的入口，整合Observer、Compile和Watcher三者，通过Observer来监听自己的model数据变化，通过Compile来解析编译模板指令，最终利用Watcher搭起Observer和Compile之间的通信桥梁，达到数据变化 -> 视图更新；视图交互变化(input) -> 数据model变更的双向绑定效果。
+
 
 vue3.0 将带来一个基于 Proxy 的 observer 实现，它可以提供覆盖语言 (JavaScript——译注) 全范围的响应式能力，消除了当前 Vue 2 系列中基于 Object.defineProperty 所存在的一些局限，这些局限包括：
 
@@ -69,9 +80,22 @@ vue3.0 将带来一个基于 Proxy 的 observer 实现，它可以提供覆盖�
 
 另外，新的 observer还提供了如下的一些特性：
 公开的用于创建 observable 的 API：这为小型到中型的应用提供了一种轻量级的、极其简单的跨组件状态管理解决方案。
+
 默认为惰性监测（Lazy Observation）。在 2.x版本中，任何响应式数据，不管它的大小如何都会在启动的时候监测功能。如果数据量很大的话，在应用启动的时候就可能造成严重的性能消耗。而在3.x 版本中，只有应用的初始可见部分所用到的数据会被监测，更不用说这种监测方案本身其实也是更加快的。
 
-6.Object.definedProperty（）和proxy的区别
+### 6.Object.definedProperty（）和proxy的区别
+
+Object.defineProperty() 的问题主要有三个：
+
+不能监听数组的变化
+必须遍历对象的每个属性
+必须深层遍历嵌套的对象
+
+
+proxy：
+针对对象:针对整个对象,而不是对象的某个属性
+支持数组:不需要对数组的方法进行重载，省去了众多 hack
+嵌套支持: get 里面递归调用 Proxy 并返回
 
 7.vue hash路由跟history路由的区别
 
