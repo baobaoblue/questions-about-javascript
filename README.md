@@ -26,6 +26,17 @@ const arr = [1,[2,3,[4]],5]
 console.log('扁平化后：',flatten(arr));
 
 ```
+* 方法三：...
+```
+function flatten(arr){
+	return [].concat(
+		...arr.map(x => Array.isArray(x)? flatten(x):x)
+	)
+}
+const arr = [1,[2,3,[4]],5]
+console.log('扁平化后：',flatten(arr));
+
+```
 
 ### 2.面向对象编程与面向过程编程的区别
 
@@ -103,7 +114,17 @@ proxy：
 
 9.webpack打包过程
 
-10.webpack 热部署的原理
+### 10.webpack 热部署的原理
+
+热更新开启后，当webpack打包时，会向客户端注入一段HMR runtime代码，同时服务器端（webpack-dev-server或webpack-hot-middleware)启动一个HMR服务器，它通过webSocket和注入的runtime进行通信。
+当webpack检测到文件修改后，会重新构建，并通过webSocket向客户端发送更新消息，浏览器通过jsonp拉取更新过的模块，回调触发模块热更新逻辑
+
+* 修改了一个或多个文件
+* 文件系统接收更改并通知webpack
+* webpack重新编译构建一个或多个模块，并通知HMR服务器进行更新
+* HMR Server 使用webSocket通知HMR runtime 需要更新，HMR运行时通过HTTP请求更新jsonp
+* HMR运行时替换更新中的模块，如果确定这些模块无法更新，则触发整个页面刷新
+
 
 11：webpack打包过慢跟打包出来文件体积过大怎么处理
 
